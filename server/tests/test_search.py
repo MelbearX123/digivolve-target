@@ -33,7 +33,9 @@ class BfsTest(unittest.TestCase):
     def test_shortest_path_wins(self):
         """The route with fewer steps is chosen."""
         graph = adj([("A", "B"), ("B", "C"), ("C", "D"), ("A", "E"), ("E", "D")])
-        self.assertEqual([s.to for s in bfs(graph, "A", "D")], ["E", "D"])
+        path = bfs(graph, "A", "D")
+        assert path is not None
+        self.assertEqual([s.to for s in path], ["E", "D"])
 
     def test_path_through_devolution(self):
         """Paths can go through a de-evolution."""
@@ -43,6 +45,7 @@ class BfsTest(unittest.TestCase):
             "GeoGreymon": [Step("Agumon", Kind.DEVOLVE)],
         }
         path = bfs(graph, "Greymon", "GeoGreymon")
+        assert path is not None
         self.assertEqual([(s.to, s.kind) for s in path],
                          [("Agumon", Kind.DEVOLVE), ("GeoGreymon", Kind.EVOLVE)])
 

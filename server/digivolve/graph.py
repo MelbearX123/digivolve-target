@@ -40,7 +40,12 @@ def build_graph(data):
     return graph
 
 
+def load_data(path=CLEAN_DATA_PATH):
+    """Load the cleaned JSON file."""
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
 def load_graph(path=CLEAN_DATA_PATH):
     """Load the cleaned JSON file and build its graph."""
-    with open(path, encoding="utf-8") as f:
-        return build_graph(json.load(f))
+    return build_graph(load_data(path))
