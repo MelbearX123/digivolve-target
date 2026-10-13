@@ -5,5 +5,4 @@ As a huge digimon fan, I immediately blew 100 dollars on the latest big digimon 
 Unlike pokemon, digimon have digivolution branches rather than just lines. With a few digivolutions/de-digivolutions, you can easily go from a a furry sea lion to an evil devil lady.
 
 Anyways, WIP
-
-- I plan on using dijkstra's to find the fastest path from one evo to another
+- Currently implemented server with BFS
