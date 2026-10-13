@@ -1,7 +1,10 @@
 """Keys, labels and naming rules for the Digimon evolution data."""
 
-RAW_DATA_PATH = "digimon_evolutions.json"
-CLEAN_DATA_PATH = "digimon_evolutions_clean.json"
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+RAW_DATA_PATH = DATA_DIR / "digimon_evolutions.json"
+CLEAN_DATA_PATH = DATA_DIR / "digimon_evolutions_clean.json"
 
 # Per-Digimon entry keys.
 STAGE = "stage"

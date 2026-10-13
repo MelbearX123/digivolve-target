@@ -8,7 +8,7 @@ Fixes applied:
   - X Antibody swaps (both directions) use the base form's requirements,
     since Grindosaur mislabels the X Antibody ones.
 
-Usage: python -m scripts.clean_data [raw.json] [out.json]
+Usage (from server/): python -m scripts.clean_data [raw.json] [out.json]
 """
 
 import json

@@ -1,6 +1,6 @@
 """HTTP API for finding evolution paths.
 
-Run from the repo root: uvicorn api.main:app --reload
+Run from server/: uvicorn api.main:app --reload
 """
 
 from fastapi import FastAPI, HTTPException
