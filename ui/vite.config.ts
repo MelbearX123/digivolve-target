@@ -7,11 +7,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      // /api/digimon -> http://localhost:8000/digimon (FastAPI dev server)
-      '/api': {
-        target: 'http://localhost:8000',
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
+      // /api/* -> FastAPI dev server, path unchanged (same as Vercel in production).
+      '/api': 'http://localhost:8000',
     },
   },
   test: {

@@ -3,12 +3,14 @@
 Run from server/: uvicorn api.main:app --reload
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException
 from pydantic import BaseModel
 
 from digivolve.graph import Kind, build_graph, load_data
 from digivolve.schema import STAGE
 from digivolve.search import bfs
+
+API_PREFIX = "/api"
 
 Requirements = dict[str, int | str | list[str]]
 
@@ -35,19 +37,19 @@ class PathResponse(BaseModel):
 
 def create_app(data) -> FastAPI:
     """Build the app around the given cleaned evolution data."""
-    api = FastAPI(title="Digivolve")
+    router = APIRouter(prefix=API_PREFIX)
     graph = build_graph(data)
     digimon = sorted(
         (Digimon(name=name, stage=entry[STAGE]) for name, entry in data.items()),
         key=lambda d: d.name.lower(),
     )
 
-    @api.get("/digimon")
+    @router.get("/digimon")
     def list_digimon() -> list[Digimon]:
         """All Digimon, sorted by name."""
         return digimon
 
-    @api.get("/path")
+    @router.get("/path")
     def find_path(start: str, target: str) -> PathResponse:
         """The fewest evolve/devolve/swap steps from start to target."""
         for name in (start, target):
@@ -62,6 +64,8 @@ def create_app(data) -> FastAPI:
             steps=[PathStep(to=s.to, kind=s.kind, requirements=s.requirements) for s in steps],
         )
 
+    api = FastAPI(title="Digivolve")
+    api.include_router(router)
     return api
 
 

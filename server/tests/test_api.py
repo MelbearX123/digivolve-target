@@ -4,9 +4,12 @@ import unittest
 
 from fastapi.testclient import TestClient
 
-from api.main import create_app
+from api.main import API_PREFIX, create_app
 from digivolve.graph import Kind
 from digivolve.schema import EVOLVES_INTO, JOGRESS, STAGE
+
+DIGIMON_URL = f"{API_PREFIX}/digimon"
+PATH_URL = f"{API_PREFIX}/path"
 
 DATA = {
     "Koromon": {STAGE: "In-Training II", EVOLVES_INTO: [["Agumon", {"Agent Rank": 1}]]},
@@ -28,7 +31,7 @@ class ApiTest(unittest.TestCase):
 
     def test_list_digimon_sorted_with_stage(self):
         """/digimon lists every Digimon with its stage, sorted by name."""
-        res = self.client.get("/digimon")
+        res = self.client.get(DIGIMON_URL)
         self.assertEqual(res.status_code, 200)
         self.assertEqual([d["name"] for d in res.json()],
                          ["Agumon", "Greymon", "Koromon", "Lonelymon", "Omnimon"])
@@ -36,7 +39,7 @@ class ApiTest(unittest.TestCase):
 
     def test_path_includes_kind_and_requirements(self):
         """/path returns each step with its kind and requirements."""
-        res = self.client.get("/path", params={"start": "Greymon", "target": "Omnimon"})
+        res = self.client.get(PATH_URL, params={"start": "Greymon", "target": "Omnimon"})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json(), {
             "start": "Greymon",
@@ -50,19 +53,19 @@ class ApiTest(unittest.TestCase):
 
     def test_unknown_digimon_is_404(self):
         """An unknown name is a 404 that names it."""
-        res = self.client.get("/path", params={"start": "Agumon", "target": "Pikachu"})
+        res = self.client.get(PATH_URL, params={"start": "Agumon", "target": "Pikachu"})
         self.assertEqual(res.status_code, 404)
         self.assertEqual(res.json()["detail"], "Unknown Digimon: Pikachu")
 
     def test_no_path_is_404(self):
         """Unreachable targets are a 404."""
-        res = self.client.get("/path", params={"start": "Agumon", "target": "Lonelymon"})
+        res = self.client.get(PATH_URL, params={"start": "Agumon", "target": "Lonelymon"})
         self.assertEqual(res.status_code, 404)
         self.assertEqual(res.json()["detail"], "No path from Agumon to Lonelymon")
 
     def test_missing_param_is_422(self):
         """Both query parameters are required."""
-        self.assertEqual(self.client.get("/path", params={"start": "Agumon"}).status_code, 422)
+        self.assertEqual(self.client.get(PATH_URL, params={"start": "Agumon"}).status_code, 422)
 
 
 if __name__ == "__main__":
