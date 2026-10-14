@@ -4,5 +4,10 @@ As a huge digimon fan, I immediately blew 100 dollars on the latest big digimon 
 
 Unlike pokemon, digimon have digivolution branches rather than just lines. With a few digivolutions/de-digivolutions, you can easily go from a a furry sea lion to an evil devil lady.
 
-Anyways, WIP
-- Currently implemented server with BFS
+Current Features:
+- Step by step instructions from one digimon to another via BFS
+
+To Be Implemented:
+- Weighted shortest distance path filtered by different stats using Dijkstra's algorithm
+- Alternate paths shown as well
+- Cleaner UI when generating steps
