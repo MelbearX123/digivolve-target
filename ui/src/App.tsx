@@ -97,18 +97,26 @@ function App() {
   }
 
   return (
-    <div>
-      {error && <p>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <label>
-          Start:
-          <input type="text" list="digimon-names" value={start} disabled={loading} onChange={(e) => setStart(e.target.value)} />
-        </label>
-        <label>
-          Target:
-          <input type="text" list="digimon-names" value={target} disabled={loading} onChange={(e) => setTarget(e.target.value)} />
-        </label>
-        <button type="submit" disabled={loading}>Go</button>
+    <div className="app">
+      <header className="header">
+        <h1 className="title">Digi-Target</h1>
+        <p className="subtitle">
+          Find the fastest way to get from one Digimon to another in Digimon Story: Time Stranger
+        </p>
+      </header>
+      {error && <p className="error messages">{error}</p>}
+      <form className="search-form" onSubmit={handleSubmit}>
+        <div className="fields">
+          <label className="field">
+            Start:
+            <input type="text" list="digimon-names" value={start} disabled={loading} onChange={(e) => setStart(e.target.value)} />
+          </label>
+          <label className="field">
+            Target:
+            <input type="text" list="digimon-names" value={target} disabled={loading} onChange={(e) => setTarget(e.target.value)} />
+          </label>
+        </div>
+        <button className="go-button" type="submit" disabled={loading}>Go</button>
       </form>
       <datalist id="digimon-names">
         {digimon.map((d) => (
@@ -116,9 +124,11 @@ function App() {
         ))}
       </datalist>
 
-      {formErrors.map((message) => <p key={message}>{message}</p>)}
-      {pathError && <p>{pathError}</p>}
-      {loading && <p>Searching...</p>}
+      <div className="messages">
+        {formErrors.map((message) => <p key={message} className="error">{message}</p>)}
+        {pathError && <p className="error">{pathError}</p>}
+        {loading && <p className="status">Searching...</p>}
+      </div>
 
       {path && (
         path.steps.length === 0 ? (
