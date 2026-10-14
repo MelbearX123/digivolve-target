@@ -1,121 +1,141 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { useEffect, useState } from 'react'
+import type { SubmitEvent } from 'react'
+
 import './App.css'
 
+type Digimon = {
+  name: string
+  stage: string
+}
+
+const Kind = {
+  Evolve: 'evolve',
+  Devolve: 'devolve',
+  Swap: 'swap',
+} as const
+
+type Kind = (typeof Kind)[keyof typeof Kind]
+
+const KIND_LABELS: Record<Kind, string> = {
+  [Kind.Evolve]: 'Evolve to',
+  [Kind.Devolve]: 'De-evolve to',
+  [Kind.Swap]: 'Swap to',
+}
+
+type Requirements = Record<string, number | string | string[]>
+
+type Step = {
+  to: string
+  kind: Kind
+  requirements: Requirements
+}
+
+type PathResponse = {
+  start: string
+  target: string
+  steps: Step[]
+}
+
+function formatRequirements(requirements: Requirements) {
+  return Object.entries(requirements)
+    .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(' + ') : value}`)
+    .join(', ')
+}
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [digimon, setDigimon] = useState<Digimon[]>([])
+  const [error, setError] = useState('')
+  const [start, setStart] = useState('')
+  const [target, setTarget] = useState('')
+  const [formErrors, setFormErrors] = useState<string[]>([])
+  const [path, setPath] = useState<PathResponse | null>(null)
+  const [pathError, setPathError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch('/api/digimon', { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error(`GET /digimon failed: ${res.status}`)
+        return res.json() as Promise<Digimon[]>
+      })
+      .then(setDigimon)
+      .catch((err: Error) => {
+        if (err.name !== 'AbortError') setError(err.message)
+      })
+    return () => controller.abort()
+  }, [])
+
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const startName = start.trim()
+    const targetName = target.trim()
+
+    const errors = []
+    if (!startName) errors.push('Start is required.')
+    if (!targetName) errors.push('Target is required.')
+    setFormErrors(errors)
+    setPath(null)
+    setPathError('')
+    if (errors.length > 0) return
+
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({ start: startName, target: targetName })
+      const res = await fetch(`/api/path?${params}`)
+      const body = await res.json()
+      if (!res.ok) {
+        setPathError(typeof body.detail === 'string' ? body.detail : `GET /path failed: ${res.status}`)
+        return
+      }
+      setPath(body as PathResponse)
+    } catch {
+      setPathError('Could not reach the server.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div>
+      {error && <p>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <label>
+          Start:
+          <input type="text" list="digimon-names" value={start} disabled={loading} onChange={(e) => setStart(e.target.value)} />
+        </label>
+        <label>
+          Target:
+          <input type="text" list="digimon-names" value={target} disabled={loading} onChange={(e) => setTarget(e.target.value)} />
+        </label>
+        <button type="submit" disabled={loading}>Go</button>
+      </form>
+      <datalist id="digimon-names">
+        {digimon.map((d) => (
+          <option key={d.name} value={d.name}>{d.stage}</option>
+        ))}
+      </datalist>
 
-      <div className="ticks"></div>
+      {formErrors.map((message) => <p key={message}>{message}</p>)}
+      {pathError && <p>{pathError}</p>}
+      {loading && <p>Searching...</p>}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      {path && (
+        path.steps.length === 0 ? (
+          <p>{path.start} is already {path.target}.</p>
+        ) : (
+          <ol>
+            <li>{path.start}</li>
+            {path.steps.map((step, i) => (
+              <li key={i}>
+                {KIND_LABELS[step.kind]} {step.to}
+                {Object.keys(step.requirements).length > 0 && ` (${formatRequirements(step.requirements)})`}
+              </li>
+            ))}
+          </ol>
+        )
+      )}
+    </div>
   )
 }
 
