@@ -1,4 +1,7 @@
 .app {
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
   max-width: 960px;
   margin: 0 auto;
   padding: 12vh 16px 48px;
@@ -143,4 +146,16 @@
 
 .status {
   color: var(--text-muted);
+}
+
+.footer {
+  padding: 12px 16px;
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+.footer a {
+  color: var(--text);
 }

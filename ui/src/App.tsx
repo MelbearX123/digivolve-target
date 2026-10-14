@@ -3,6 +3,7 @@ import type { SubmitEvent } from 'react'
 
 import './App.css'
 import Combobox from './Combobox'
+import Footer from './Footer'
 import { ABORT_ERROR, ApiRoute } from './api'
 import { Kind } from './types'
 import type { Digimon, PathResponse, Requirements } from './types'
@@ -74,44 +75,47 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <header className="header">
-        <h1 className="title">Digi-Target</h1>
-        <p className="subtitle">
-          Find the fastest way to get from one Digimon to another in Digimon Story: Time Stranger
-        </p>
-      </header>
-      {error && <p className="error messages">{error}</p>}
-      <form className="search-form" onSubmit={handleSubmit}>
-        <div className="fields">
-          <Combobox label="Start:" value={start} options={digimon} disabled={loading} onChange={setStart} />
-          <Combobox label="Target:" value={target} options={digimon} disabled={loading} onChange={setTarget} />
+    <>
+      <div className="app">
+        <header className="header">
+          <h1 className="title">Digi-Target</h1>
+          <p className="subtitle">
+            Find the fastest way to get from one Digimon to another in Digimon Story: Time Stranger
+          </p>
+        </header>
+        {error && <p className="error messages">{error}</p>}
+        <form className="search-form" onSubmit={handleSubmit}>
+          <div className="fields">
+            <Combobox label="Start:" value={start} options={digimon} disabled={loading} onChange={setStart} />
+            <Combobox label="Target:" value={target} options={digimon} disabled={loading} onChange={setTarget} />
+          </div>
+          <button className="go-button" type="submit" disabled={loading}>Go</button>
+        </form>
+
+        <div className="messages">
+          {formErrors.map((message) => <p key={message} className="error">{message}</p>)}
+          {pathError && <p className="error">{pathError}</p>}
+          {loading && <p className="status">Searching...</p>}
         </div>
-        <button className="go-button" type="submit" disabled={loading}>Go</button>
-      </form>
 
-      <div className="messages">
-        {formErrors.map((message) => <p key={message} className="error">{message}</p>)}
-        {pathError && <p className="error">{pathError}</p>}
-        {loading && <p className="status">Searching...</p>}
+        {path && (
+          path.steps.length === 0 ? (
+            <p>{path.start} is already {path.target}.</p>
+          ) : (
+            <ol>
+              <li>{path.start}</li>
+              {path.steps.map((step, i) => (
+                <li key={i}>
+                  {KIND_LABELS[step.kind]} {step.to}
+                  {Object.keys(step.requirements).length > 0 && ` (${formatRequirements(step.requirements)})`}
+                </li>
+              ))}
+            </ol>
+          )
+        )}
       </div>
-
-      {path && (
-        path.steps.length === 0 ? (
-          <p>{path.start} is already {path.target}.</p>
-        ) : (
-          <ol>
-            <li>{path.start}</li>
-            {path.steps.map((step, i) => (
-              <li key={i}>
-                {KIND_LABELS[step.kind]} {step.to}
-                {Object.keys(step.requirements).length > 0 && ` (${formatRequirements(step.requirements)})`}
-              </li>
-            ))}
-          </ol>
-        )
-      )}
-    </div>
+      <Footer />
+    </>
   )
 }
 
