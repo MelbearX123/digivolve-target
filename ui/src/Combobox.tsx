@@ -8,6 +8,7 @@ const Key = {
   ArrowUp: 'ArrowUp',
   Enter: 'Enter',
   Escape: 'Escape',
+  Tab: 'Tab',
 } as const
 
 function optionId(comboboxId: string, index: number) {
@@ -42,6 +43,7 @@ function Combobox({ label, value, options, disabled = false, onChange }: Combobo
 
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
+  const [typed, setTyped] = useState(false)
 
   const filtered = useMemo(() => filterOptions(options, value), [options, value])
   const showList = open && !disabled && filtered.length > 0
@@ -51,22 +53,42 @@ function Combobox({ label, value, options, disabled = false, onChange }: Combobo
     document.getElementById(optionId(id, activeIndex))?.scrollIntoView({ block: 'nearest' })
   }, [id, activeIndex])
 
-  function select(option: Digimon) {
-    onChange(option.name)
+  function close() {
     setOpen(false)
     setActiveIndex(-1)
+    setTyped(false)
+  }
+
+  function select(option: Digimon) {
+    onChange(option.name)
+    close()
+  }
+
+  function moveDown() {
+    setOpen(true)
+    setActiveIndex((i) => Math.min(i + 1, filtered.length - 1))
+  }
+
+  function moveUp() {
+    setActiveIndex((i) => Math.max(i - 1, 0))
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     switch (e.key) {
       case Key.ArrowDown:
         e.preventDefault()
-        setOpen(true)
-        setActiveIndex((i) => Math.min(i + 1, filtered.length - 1))
+        moveDown()
         break
       case Key.ArrowUp:
         e.preventDefault()
-        setActiveIndex((i) => Math.max(i - 1, 0))
+        moveUp()
+        break
+      case Key.Tab:
+        if (showList && typed) {
+          e.preventDefault()
+          if (e.shiftKey) moveUp()
+          else moveDown()
+        }
         break
       case Key.Enter:
         if (showList && activeIndex >= 0) {
@@ -75,8 +97,7 @@ function Combobox({ label, value, options, disabled = false, onChange }: Combobo
         }
         break
       case Key.Escape:
-        setOpen(false)
-        setActiveIndex(-1)
+        close()
         break
     }
   }
@@ -100,13 +121,11 @@ function Combobox({ label, value, options, disabled = false, onChange }: Combobo
             onChange(e.target.value)
             setOpen(true)
             setActiveIndex(-1)
+            setTyped(true)
           }}
           onFocus={() => setOpen(true)}
           onClick={() => setOpen(true)}
-          onBlur={() => {
-            setOpen(false)
-            setActiveIndex(-1)
-          }}
+          onBlur={close}
           onKeyDown={handleKeyDown}
         />
         {showList && (
